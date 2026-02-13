@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Memory Lane</title>
+    <!-- Importing a natural handwriting font -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --pink-light: #ffe5ec;
+            --pink-medium: #ff8fa3;
+            --pink-dark: #ff4d6d;
+            --text-color: #590d22;
+            --cream: #fdfdf5;
+            --seal-pink: #d9919b;
+            --paper-base: #f1e6d2;
+            --ink-color: #1a1a1a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--pink-light) 0%, #fff 60%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: var(--text-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Continuous Background Hearts */
+        .bg-hearts {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-heart {
+            position: absolute;
+            color: var(--pink-medium);
+            opacity: 0;
+            animation: slowFloat var(--duration) linear infinite;
+        }
+
+        @keyframes slowFloat {
+            0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.5; }
+            100% { transform: translateY(-20vh) translateX(var(--sway)) rotate(360deg); opacity: 0; }
+        }
+
+        /* Quiz Container */
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 2.5rem;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(255, 77, 109, 0.15);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        #start-screen, #quiz-screen, #result-screen, #loading-screen { display: none; }
+        #start-screen { display: block; }
+
+        .progress-bar { width: 100%; height: 6px; background: #eee; border-radius: 10px; margin-bottom: 2rem; overflow: hidden; }
+        #progress { height: 100%; width: 0%; background: var(--pink-dark); transition: 0.4s; }
+
+        input {
+            width: 100%; padding: 12px 0; border: none; border-bottom: 2px solid var(--pink-light);
+            background: transparent; font-size: 1.2rem; text-align: center; outline: none; margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        button {
+            background: var(--pink-dark); color: white; border: none; padding: 12px 40px;
+            border-radius: 50px; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
+            margin: 10px 0;
+        }
+
+        button:hover { transform: scale(1.05); }
+
+        .format-hint {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--pink-medium);
+            font-style: italic;
+        }
+
+        /* Gift Experience Overlay */
+        #gift-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Realistic Envelope */
+        #envelope-container {
+            width: 320px;
+            height: 220px;
+            background: var(--cream);
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-2deg);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid #e5e5d8;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        #envelope-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(to bottom right, transparent 49.5%, #d1d1c5 50%, transparent 50.5%) no-repeat,
+                linear-gradient(to bottom left, transparent 49.5%, #d1d1c5 50%, transparent 50.5%) no-repeat;
+            background-size: 100% 100%;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        #envelope-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(135deg, transparent 50%, #f9f9f0 50.5%), 
+                        linear-gradient(225deg, transparent 50%, #f9f9f0 50.5%);
+            background-size: 50% 100%;
+            background-position: left bottom, right bottom;
+            background-repeat: no-repeat;
+            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.02);
+        }
+
+        .wax-seal {
+            width: 65px;
+            height: 65px;
+            background: var(--seal-pink);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 2px 6px 10px rgba(0,0,0,0.3), inset -3px -3px 6px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transform: rotate(5deg);
+        }
+
+        .wax-seal::before {
+            content: '✿';
+            font-size: 1.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .gift-label {
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: var(--pink-dark);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease 0.8s; /* Delayed until after envelope appears */
+        }
+
+        #gift-overlay.visible .gift-label {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #letter-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 110;
+
+    background: transparent;   /* 🔥 THIS LINE CHANGED */
+    backdrop-filter: none;     /* optional: remove blur */
+}
+
+
+        .vintage-page {
+            position: relative;
+            width: 85%;
+            max-width: 660px;
+            aspect-ratio: 1 / 1.4;
+            background-color: var(--paper-base);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='0.05'/%3E%3C/svg%3E"),
+                radial-gradient(circle at 50% 50%, transparent 0%, rgba(139, 101, 69, 0.12) 100%);
+            padding: 70px 40px;
+            box-sizing: border-box;
+            color: var(--ink-color);
+            font-family: 'Caveat', cursive;
+            box-shadow: 20px 20px 50px rgba(0,0,0,0.25);
+            transform: scale(0.8) translateY(50px) rotate(-3deg);
+            opacity: 0;
+            transition: all 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: url(#paper-torn-heavy);
+        }
+
+        #letter-view.active .vintage-page {
+            transform: scale(1) translateY(0) rotate(-2deg);
+            opacity: 1;
+        }
+
+        .letter-text {
+            font-size: 1.6rem;
+            line-height: 1.3;
+            white-space: pre-wrap;
+            font-weight: 500;
+        }
+
+        .love-script {
+            position: absolute;
+            bottom: 45px;
+            left: 40px;
+            font-size: 1.8rem;
+            color: var(--ink-color);
+            opacity: 0.9;
+        }
+
+        .page-feather {
+            position: absolute;
+            bottom: 35px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            opacity: 0.15;
+            transform: rotate(25deg);
+        }
+
+        .error-hint { color: var(--pink-dark); font-size: 0.8rem; height: 1.2rem; margin-top: 5px; }
+        #svg-filters { width: 0; height: 0; position: absolute; }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--pink-light);
+            border-top: 4px solid var(--pink-dark);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-hearts" id="bg-hearts"></div>
+
+    <div class="container" id="quiz-container">
+        <!-- Start -->
+        <div id="start-screen">
+            <h1 style="font-size: 3.5rem; margin-bottom: 0;">💌</h1>
+            <h1 style="margin-top: 10px;">Hii Rakshasi</h1>
+            <p>Saradaga Try Chesa Chudu?</p>
+            <button onclick="startQuiz()">Start Chedam aa</button>
+        </div>
+
+        <!-- Quiz -->
+        <div id="quiz-screen">
+            <div class="progress-bar"><div id="progress"></div></div>
+            <h2 id="q-text" style="font-size: 1.2rem; margin-bottom: 20px; line-height: 1.5;"></h2>
+            <input type="text" id="ans-input" placeholder="e.g. Jan 4" autocomplete="off" onkeydown="checkEnter(event)">
+            <div id="error-msg" class="error-hint"></div>
+            <button onclick="handleNext()">Next ❤️</button>
+            <small class="format-hint">Hint: Eee  (e.g., Jan 4,EarBuds) Format lo raye bangaram...</small>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading-screen">
+            <h2>Calculating our love...</h2>
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Result -->
+        <div id="result-screen">
+            <h1>Abbooo</h1>
+<p>Nv eadhe pettena 100% ea potti🤗</p>
+            <div style="font-size: 3rem; font-weight: bold; color: var(--pink-dark); margin: 15px 0;" id="score-val">0%</div>
+            <p id="result-msg" style="margin-bottom: 1.5rem;"></p>
+            <button id="gift-btn" onclick="showGift()" style="background: var(--seal-pink); padding: 15px 40px;">View Gift 🎁</button>
+        </div>
+    </div>
+
+    <!-- Envelope Overlay (Cover) -->
+    <div id="gift-overlay">
+        <div id="envelope-container" onclick="openLetter()" tabindex="0" onkeydown="checkEnter(event)">
+            <div class="wax-seal"></div>
+        </div>
+        <div class="gift-label">Open your gift ✨</div>
+    </div>
+
+    <!-- Realistic Letter View -->
+    <div id="letter-view">
+        <div class="vintage-page">
+            <div class="letter-text">
+Hii Nanna,
+
+Maa Frnd okadu something ela try chesadu vala frnd love kosam andhuke manke oka love(syco) vundhe kadha ane edhe chesa ante. 
+
+Nv ante istem ea ra naku but nv love chese antha cheyanu emo but konne sarlu ela anepistade intha manche ammai dorakadhu emo ane.
+Love chestunano or manche ammai dorakadu ane vuntunano ardam kavadam le kani nv ea kavale maa.
+But ninnu yedepistunappudu anepistasde intha manche ammai ne love ane cheppe yedepistuna ane, andhuku anukunta vadhele podam ane.
+
+Nv matram vadalav gaa Rakshasi ve , Bangaram maa nv nee gurinche eam cheppena takkuve ra.
+
+Love you thalli...❤️
+
+Itlu nee Sadistu..,
+❤️
+            </div>
+            <div class="love-script">First love ra nv last daka vundepo kanna(Once again LOVE YOU BUDDI..)</div>
+            <svg class="page-feather" viewBox="0 0 24 24" fill="currentColor"><path d="M21 2c-5.17 0-9.46 3.73-10.22 8.61L9 12l-2-2-4 4 3 3-1 3 3-1 3 3 4-4-2-2 1.39-1.78C16.27 10.54 20 6.26 20 2.5V2h1zm-5 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+        </div>
+    </div>
+
+    <svg id="svg-filters">
+        <defs>
+            <filter id="paper-torn-heavy">
+                <feTurbulence type="fractalNoise" baseFrequency="0.004" numOctaves="4" seed="4" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <script>
+        const questions = [
+            { q: "Manam 1st Kalisena Roju eante raaa.......?", a: "Jan 4" },
+            { q: "Nenu neku echena 1st gift eante..?", a: "EarBuds" },
+            { q: "Nenu neku First time 'I Love You' eppudu cheppa?", a: "Jan 11" },
+            { q: "Naa BirthDay yeppudu..?", a: "Sept 21" },
+            { q: "Mana special anniversary roju eante(naku)?", a: "Jan 4" }
+        ];
+
+        let idx = 0, score = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            document.body.style.setProperty('--mouse-x', `${(e.clientX / window.innerWidth) * 100}%`);
+            document.body.style.setProperty('--mouse-y', `${(e.clientY / window.innerHeight) * 100}%`);
+        });
+
+        function checkEnter(e) {
+            if (e.key === 'Enter') {
+                if (e.target.id === 'ans-input') {
+                    handleNext();
+                } else if (e.target.id === 'envelope-container') {
+                    openLetter();
+                }
+            }
+        }
+
+        function createHearts() {
+            const container = document.getElementById('bg-hearts');
+            for (let i = 0; i < 18; i++) {
+                const h = document.createElement('div');
+                h.className = 'floating-heart';
+                h.innerText = '❤';
+                h.style.left = Math.random() * 100 + 'vw';
+                h.style.fontSize = (15 + Math.random() * 20) + 'px';
+                h.style.setProperty('--duration', (15 + Math.random() * 10) + 's');
+                h.style.setProperty('--sway', (Math.random() * 80 - 40) + 'px');
+                h.style.animationDelay = (Math.random() * -20) + 's';
+                container.appendChild(h);
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            showQ();
+            setTimeout(() => document.getElementById('ans-input').focus(), 100);
+        }
+
+        function showQ() {
+            if (idx < questions.length) {
+                document.getElementById('q-text').innerText = questions[idx].q;
+                document.getElementById('ans-input').value = "";
+                document.getElementById('progress').style.width = (idx / questions.length * 100) + "%";
+                document.getElementById('error-msg').innerText = "";
+            } else {
+                prepareResults();
+            }
+        }
+
+        function handleNext() {
+            const val = document.getElementById('ans-input').value.trim().toLowerCase();
+            if (!val) { 
+                document.getElementById('error-msg').innerText = "Answer cheyave pandhi"; 
+                return; 
+            }
+            if (val === questions[idx].a.toLowerCase()) score++;
+            idx++;
+            showQ();
+        }
+
+        function prepareResults() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'block';
+            setTimeout(showResults, 1500);
+        }
+
+        function showResults() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            const pct = Math.round((score / questions.length) * 100);
+            document.getElementById('score-val').innerText = "100%";
+            document.getElementById('result-msg').innerText = pct === 100 ? "You remembered everything perfectly! ❤️" : "Manake Score tho pani eante ea nee gurinche naku teledu aa pandhi...❤️";
+        }
+
+        function showGift() {
+            document.getElementById('quiz-container').style.opacity = '0';
+            document.getElementById('quiz-container').style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                document.getElementById('quiz-container').style.display = 'none';
+                const giftOverlay = document.getElementById('gift-overlay');
+                giftOverlay.style.display = 'flex';
+                
+                // Trigger label animation
+                setTimeout(() => giftOverlay.classList.add('visible'), 50);
+
+                const env = document.getElementById('envelope-container');
+                env.style.transform = 'rotate(-2deg) scale(1.05)';
+                setTimeout(() => env.style.transform = 'rotate(-2deg) scale(1)', 300);
+                env.focus();
+            }, 600);
+        }
+
+        function openLetter() {
+            const envelope = document.getElementById('envelope-container');
+            const label = document.querySelector('.gift-label');
+            
+            envelope.style.transform = 'scale(0.1) rotate(45deg) translateY(-1200px)';
+            envelope.style.opacity = '0';
+            label.style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('letter-view').style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('letter-view').classList.add('active');
+                }, 50);
+            }, 500);
+        }
+
+        window.onload = createHearts;
+    </script>
+</body>
+</html>
